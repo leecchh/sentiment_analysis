@@ -14,9 +14,56 @@ class Bayes_Classifier:
       the system will proceed through training.  After running this method, the classifier 
       is ready to classify input text."""
 
+      self.dictP = {}
+      self.dictN = {}
+      if(os.path.isfile("dictP.txt")):
+         self.dictP=self.load("dictP.txt")
+         self.dictN=self.load("dictN.txt")
+      else:
+         self.train()
+
    def train(self):   
       """Trains the Naive Bayes Sentiment Classifier."""
-    
+      lFileList = []
+      for fFileObj in os.walk("movies_reviews/"):
+         lFileList = fFileObj[2]
+         break
+      lFileListP = []
+      lFileListN = []
+      posString='movies-5'
+      negString='movies-1'
+
+      for string in lFileList:
+         if(string.startswith(posString)):
+            lFileListP.append(string)
+         else:
+            lFileListN.append(string)
+
+      # dictP={}
+      # dictN={}
+      for Pfile in lFileListP:
+         string="movies_reviews/"+Pfile
+         revString=self.loadFile(string)
+         lst=self.tokenize(revString)
+         for word in lst:
+            if self.dictP.has_key(word):
+               self.dictP[word] = self.dictP[word]+1
+            else:
+               self.dictP[word] = 1
+
+      for Nfile in lFileListN:
+         string="movies_reviews/"+Nfile
+         revString=self.loadFile(string)
+         lst=self.tokenize(revString)
+         for word in lst:
+            if self.dictN.has_key(word):
+               self.dictN[word] = self.dictN[word]+1
+            else:
+               self.dictN[word] = 1
+
+      self.save(self.dictP,"dictP.txt")
+      self.save(self.dictN,"dictN.txt")
+
    def classify(self, sText):
       """Given a target string sText, this function returns the most likely document
       class to which the target string belongs (i.e., positive, negative or neutral).
