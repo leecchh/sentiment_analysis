@@ -14,13 +14,15 @@ class Bayes_Classifier:
       the system will proceed through training.  After running this method, the classifier 
       is ready to classify input text."""
 
-      self.dictP = {}
-      self.dictN = {}
-      if(os.path.isfile("dictP.txt")):
-         self.dictP=self.load("dictP.txt")
-         self.dictN=self.load("dictN.txt")
+      self.dictP1 = {}
+      self.dictN1 = {}
+      if(os.path.isfile("dictP1.txt")):
+         self.dictP1=self.load("dictP1.txt")
+         self.dictN1=self.load("dictN1.txt")
       else:
          self.train()
+      print len(self.dictN1)
+      print len(self.dictP1)
 
    def train(self):   
       """Trains the Naive Bayes Sentiment Classifier."""
@@ -44,23 +46,23 @@ class Bayes_Classifier:
          revString=self.loadFile(string)
          lst=self.tokenize(revString)
          for word in lst:
-            if self.dictP.has_key(word):
-               self.dictP[word] = self.dictP[word]+1
+            if self.dictP1.has_key(word):
+               self.dictP1[word] = self.dictP1[word]+1
             else:
-               self.dictP[word] = 1
+               self.dictP1[word] = 1
 
       for Nfile in lFileListN:
          string="movies_reviews/"+Nfile
          revString=self.loadFile(string)
          lst=self.tokenize(revString)
          for word in lst:
-            if self.dictN.has_key(word):
-               self.dictN[word] = self.dictN[word]+1
+            if self.dictN1.has_key(word):
+               self.dictN1[word] = self.dictN1[word]+1
             else:
-               self.dictN[word] = 1
+               self.dictN1[word] = 1
 
-      self.save(self.dictP,"dictP.txt")
-      self.save(self.dictN,"dictN.txt")
+      self.save(self.dictP1,"dictP1.txt")
+      self.save(self.dictN1,"dictN1.txt")
 
    def classify(self, sText):
       """Given a target string sText, this function returns the most likely document
@@ -84,23 +86,25 @@ class Bayes_Classifier:
          else:
             NNum=NNum+1
 
-      PriorPos=PNum*1.0/(PNum+NNum)
-      PriorNeg=1-PriorPos
+      # PriorPos=PNum*1.0/(PNum+NNum)
+      # PriorNeg=1-PriorPos
+      PriorPos=1
+      PriorNeg=1
       probabilityP=math.log(PriorPos)
       totalFreqP=0
-      for value in (self.dictP).values():
+      for value in (self.dictP1).values():
          totalFreqP=totalFreqP+value
 
       probabilityN=math.log(PriorNeg)
       totalFreqN=0
-      for value in (self.dictN).values():
+      for value in (self.dictN1).values():
          totalFreqN=totalFreqN+value
 
       lst=self.tokenize(sText)
       for word in lst:
          wordFreq=0
-         if (self.dictP).has_key(word):
-            wordFreq=(self.dictP).get(word)
+         if (self.dictP1).has_key(word):
+            wordFreq=(self.dictP1).get(word)
          else:
             wordFreq=1
          wordprob=wordFreq*1.0/(totalFreqP)
@@ -108,8 +112,8 @@ class Bayes_Classifier:
 
       for word in lst:
          wordFreq=0
-         if (self.dictN).has_key(word):
-            wordFreq=(self.dictN).get(word)
+         if (self.dictN1).has_key(word):
+            wordFreq=(self.dictN1).get(word)
          else:
             wordFreq=1
          wordprob=wordFreq*1.0/(totalFreqN)

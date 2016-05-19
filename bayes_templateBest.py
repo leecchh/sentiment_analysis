@@ -3,7 +3,10 @@
 # Description:
 #
 #
-
+import nltk
+from nltk.util import ngrams
+from nltk.corpus import stopwords
+from nltk.stem.snowball import SnowballStemmer
 import math, os, pickle, re
 
 class Bayes_Classifier:
@@ -21,9 +24,16 @@ class Bayes_Classifier:
          self.dictN=self.load("dictN.txt")
       else:
          self.train()
+      print len(self.dictN)
+      print len(self.dictP)
 
    def train(self):   
       """Trains the Naive Bayes Sentiment Classifier."""
+      
+      stop = stopwords.words('english')
+      # stop.append('the','or')
+      stemmer = SnowballStemmer("english")
+
       lFileList = []
       for fFileObj in os.walk("movies_reviews/"):
          lFileList = fFileObj[2]
@@ -42,22 +52,64 @@ class Bayes_Classifier:
       for Pfile in lFileListP:
          string="movies_reviews/"+Pfile
          revString=self.loadFile(string)
-         lst=self.tokenize(revString)
-         for word in lst:
+    
+         if (len(revString.split())==1):
+            word = revString.split()[0]
             if self.dictP.has_key(word):
                self.dictP[word] = self.dictP[word]+1
             else:
-               self.dictP[word] = 1
+               self.dictP[word]=1
+
+
+         #Bigram implementation
+         else:
+            lst = ngrams(revString.split(),2)
+            for word in lst:
+            # if (words not in stop):
+               if self.dictP.has_key(word):
+                  self.dictP[word] = self.dictP[word]+1
+               else:
+                  self.dictP[word] = 1
+
+         #Unigram implementation
+         lst1=self.tokenize(revString)
+         for word in lst1:
+         # if (word not in stop):
+            if self.dictP.has_key(word):
+               self.dictP[word] = self.dictP[word]+1
+            else:
+               self.dictP[word] = 1         
 
       for Nfile in lFileListN:
          string="movies_reviews/"+Nfile
          revString=self.loadFile(string)
-         lst=self.tokenize(revString)
-         for word in lst:
+
+         if (len(revString.split())==1):
+            word = revString.split()[0]
+            if self.dictN.has_key(word):
+               self.dictN[word]=self.dictN[word]+1
+            else:
+               self.dictN[word]=1
+         
+         #Bigram implementati
+         else:
+            lst = ngrams(revString.split(),2)
+            for word in lst:
+            # if (word not in stop):
+               if self.dictN.has_key(word):
+                  self.dictN[word] = self.dictN[word]+1
+               else:
+                  self.dictN[word] = 1
+
+         #Unigram implementation
+         lst1=self.tokenize(revString)
+         for word in lst1:
+         # if (word not in stop):
             if self.dictN.has_key(word):
                self.dictN[word] = self.dictN[word]+1
             else:
                self.dictN[word] = 1
+
 
       self.save(self.dictP,"dictP.txt")
       self.save(self.dictN,"dictN.txt")
@@ -66,6 +118,7 @@ class Bayes_Classifier:
       """Given a target string sText, this function returns the most likely document
       class to which the target string belongs (i.e., positive, negative or neutral).
       """
+
       lFileList = []
       for fFileObj in os.walk("movies_reviews/"):
          lFileList = fFileObj[2]
@@ -84,8 +137,10 @@ class Bayes_Classifier:
          else:
             NNum=NNum+1
 
-      PriorPos=PNum*1.0/(PNum+NNum)
-      PriorNeg=1-PriorPos
+      # PriorPos=PNum*1.0/(PNum+NNum)
+      # PriorNeg=1-PriorPos
+      PriorPos = 1
+      PriorNeg = 1
       probabilityP=math.log(PriorPos)
       totalFreqP=0
       for value in (self.dictP).values():
@@ -123,13 +178,17 @@ class Bayes_Classifier:
 
       if probabilityP>probabilityN:
          if (probabilityN>probabilityP-0.8):
+            print "neutral"
             return "neutral"
          else:
+            print "negative"
             return "negative"
       if probabilityP<=probabilityN:
          if (probabilityP>probabilityN-0.8):
+            print "neutral"
             return "neutral"
          else:
+            print "positive"
             return "positive"
 
 
