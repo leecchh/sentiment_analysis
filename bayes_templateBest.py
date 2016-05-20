@@ -118,21 +118,196 @@ class Bayes_Classifier:
       probabilityP=abs(probabilityP)
       probabilityN=abs(probabilityN)
 
+      stringLen=len(lst) # Get the number of strings in the input
+      lensqt=math.sqrt(stringLen) # Takes the square root of the number of strings
       print probabilityP
       print probabilityN
 
       if probabilityP>probabilityN:
-         if (probabilityN>probabilityP-0.8):
+         if (probabilityN>probabilityP-0.7*lensqt):
             return "neutral"
          else:
             return "negative"
       if probabilityP<=probabilityN:
-         if (probabilityP>probabilityN-0.8):
+         if (probabilityP>probabilityN-0.7*lensqt):
             return "neutral"
          else:
             return "positive"
 
+   def crossVal(self):
+      lFileList = [] #The whole list
+      for fFileObj in os.walk("movies_reviews/"):
+         lFileList = fFileObj[2]
+         break
+      lFileListP = [] #Positive in the list
+      lFileListN = [] #Negative in the list
+      posString='movies-5'
+      negString='movies-1'
 
+      for string in lFileList:
+         if(string.startswith(posString)):
+            lFileListP.append(string)
+         else:
+            lFileListN.append(string)
+      
+      Plength=len(lFileListP)
+      Nlength=len(lFileListN)
+      Psubset=Plength/10
+      Nsubset=Nlength/10
+      empty=[]
+      lFileListSubsetP=[]
+      lFileListSubsetN=[]
+      for num in range(0,10):
+         lFileListSubsetP.append(empty)
+         lFileListSubsetN.append(empty)
+
+      for num in range(0,10):
+         jump1=num*Psubset
+         jump2=num*Nsubset
+         for x in range(0+jump1,Psubset+jump1):
+            lFileListSubsetP[num].append(lFileListP[x])
+         for x in range(0+jump2,Nsubset+jump2):
+            lFileListSubsetN[num].append(lFileListN[x])
+
+      dictArrayP=[]
+      for num in range(0,10):
+         dictArrayP.append({})
+
+      dictArrayN=[]
+      for num in range(0,10):
+         dictArrayN.append({})
+
+      for numsubset in range(0,10):
+         for num in range(0,10):
+            if (numsubset!=num):
+               for Pfile in lFileListSubsetP[num]:
+                  string="movies_reviews/"+Pfile
+                  revString=self.loadFile(string)
+                  lst=self.tokenize(revString)
+                  for word in lst:
+                     if dictArrayP[numsubset].has_key(word):
+                        (dictArrayP[numsubset])[word] = (dictArrayP[numsubset])[word]+1
+                     else:
+                        (dictArrayP[numsubset])[word] = 1
+
+      for numsubset in range(0,10):
+         for num in range(0,10):
+            if (numsubset!=num):
+               for Nfile in lFileListSubsetN[num]:
+                  string="movies_reviews/"+Nfile
+                  revString=self.loadFile(string)
+                  lst=self.tokenize(revString)
+                  for word in lst:
+                     if dictArrayN[numsubset].has_key(word):
+                        (dictArrayN[numsubset])[word] = (dictArrayN[numsubset])[word]+1
+                     else:
+                        (dictArrayN[numsubset])[word] = 1
+
+      recallP=[]
+      recallN=[]
+      precisionP=[]
+      precisionN=[]
+      numerator=0
+      denominator=0
+
+      for numsubset in range(0,10):
+         numerator=0
+         denominator=0
+         for Pfile in LFileListSubsetP[num]:
+            value=self.classifyTest(Pfile,dictArrayP[numsubset],dictArrayN[numsubset])
+            if (value is "positive"):
+               numerator+=1
+               denominator+=1
+            else:
+               denominator+=1
+         recallP.append(numerator*1.0/denominator)
+
+      for numsubset in range(0,10):
+         numerator=0
+         denominator=0
+         for Nfile in LFileListSubsetN[num]:
+            value=self.classifyTest(Nfile,dictArrayP[numsubset],dictArrayN[numsubset])
+            if (value is "negative"):
+               numerator+=1
+               denominator+=1
+            else:
+               denominator+=1
+         recallN.append(numerator*1.0/denominator)
+
+      print recallP
+      print recallN
+
+   def classifyTest(self, sText, dictP,dictN):
+      """Given a target string sText, this function returns the most likely document
+      class to which the target string belongs (i.e., positive, negative or neutral).
+      """
+      lFileList = []
+      for fFileObj in os.walk("movies_reviews/"):
+         lFileList = fFileObj[2]
+         break
+      lFileListP = []
+      lFileListN = []
+      posString='movies-5'
+      negString='movies-1'
+
+      PNum=0
+      NNum=0
+
+      for string in lFileList:
+         if(string.startswith(posString)):
+            PNum=PNum+1
+         else:
+            NNum=NNum+1
+
+      PriorPos=PNum*1.0/(PNum+NNum)
+      PriorNeg=1-PriorPos
+      probabilityP=math.log(PriorPos)
+      totalFreqP=0
+      for value in (dictP).values():
+         totalFreqP=totalFreqP+value
+
+      probabilityN=math.log(PriorNeg)
+      totalFreqN=0
+      for value in (dictN).values():
+         totalFreqN=totalFreqN+value
+
+      lst=self.tokenize(sText)
+      for word in lst:
+         wordFreq=0
+         if (dictP).has_key(word):
+            wordFreq=(dictP).get(word)
+         else:
+            wordFreq=1
+         wordprob=wordFreq*1.0/(totalFreqP)
+         probabilityP=probabilityP+math.log(wordprob*1.0)
+
+      for word in lst:
+         wordFreq=0
+         if (dictN).has_key(word):
+            wordFreq=(dictN).get(word)
+         else:
+            wordFreq=1
+         wordprob=wordFreq*1.0/(totalFreqN)
+         probabilityN=probabilityN+math.log(wordprob*1.0)
+
+      probabilityP=abs(probabilityP)
+      probabilityN=abs(probabilityN)
+
+      stringLen=len(lst) # Get the number of strings in the input
+      lensqt=math.sqrt(stringLen) # Takes the square root of the number of strings
+      print probabilityP
+      print probabilityN
+
+      if probabilityP>probabilityN:
+         if (probabilityN>probabilityP-0.7*lensqt):
+            return "neutral"
+         else:
+            return "negative"
+      if probabilityP<=probabilityN:
+         if (probabilityP>probabilityN-0.7*lensqt):
+            return "neutral"
+         else:
+            return "positive"
 
    def loadFile(self, sFilename):
       """Given a file name, return the contents of the file as a string."""
