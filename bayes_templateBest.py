@@ -213,7 +213,7 @@ class Bayes_Classifier:
       for numsubset in range(0,10):
          numerator=0
          denominator=0
-         for Pfile in LFileListSubsetP[num]:
+         for Pfile in lFileListSubsetP[num]:
             value=self.classifyTest(Pfile,dictArrayP[numsubset],dictArrayN[numsubset])
             if (value is "positive"):
                numerator+=1
@@ -225,7 +225,7 @@ class Bayes_Classifier:
       for numsubset in range(0,10):
          numerator=0
          denominator=0
-         for Nfile in LFileListSubsetN[num]:
+         for Nfile in lFileListSubsetN[num]:
             value=self.classifyTest(Nfile,dictArrayP[numsubset],dictArrayN[numsubset])
             if (value is "negative"):
                numerator+=1
