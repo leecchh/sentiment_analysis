@@ -86,12 +86,12 @@ class Bayes_Classifier:
 
       PriorPos=PNum*1.0/(PNum+NNum)
       PriorNeg=1-PriorPos
-      probabilityP=math.log(PriorPos)
+      probabilityP=1
       totalFreqP=0
       for value in (self.dictP).values():
          totalFreqP=totalFreqP+value
 
-      probabilityN=math.log(PriorNeg)
+      probabilityN=1
       totalFreqN=0
       for value in (self.dictN).values():
          totalFreqN=totalFreqN+value
@@ -149,11 +149,14 @@ class Bayes_Classifier:
             lFileListP.append(string)
          else:
             lFileListN.append(string)
+
+      print len(lFileListP)
       
       Plength=len(lFileListP)
       Nlength=len(lFileListN)
       Psubset=Plength/10
       Nsubset=Nlength/10
+      Psubset=Nsubset
       empty=[]
       lFileListSubsetP=[]
       lFileListSubsetN=[]
@@ -162,11 +165,9 @@ class Bayes_Classifier:
          lFileListSubsetN.append(empty)
 
       for num in range(0,10):
-         jump1=num*Psubset
-         jump2=num*Nsubset
-         for x in range(0+jump1,Psubset+jump1):
+         jump=num*Psubset
+         for x in range(0+jump,Psubset+jump):
             lFileListSubsetP[num].append(lFileListP[x])
-         for x in range(0+jump2,Nsubset+jump2):
             lFileListSubsetN[num].append(lFileListN[x])
 
       dictArrayP=[]
@@ -203,6 +204,28 @@ class Bayes_Classifier:
                      else:
                         (dictArrayN[numsubset])[word] = 1
 
+      self.save(dictArrayP[0],"dictP0.txt")
+      self.save(dictArrayP[1],"dictP1.txt")
+      self.save(dictArrayP[2],"dictP2.txt")
+      self.save(dictArrayP[3],"dictP3.txt")
+      self.save(dictArrayP[4],"dictP4.txt")
+      self.save(dictArrayP[5],"dictP5.txt")
+      self.save(dictArrayP[6],"dictP6.txt")
+      self.save(dictArrayP[7],"dictP7.txt")
+      self.save(dictArrayP[8],"dictP8.txt")
+      self.save(dictArrayP[9],"dictP9.txt")
+
+      self.save(dictArrayN[0],"dictN0.txt")
+      self.save(dictArrayN[1],"dictN1.txt")
+      self.save(dictArrayN[2],"dictN2.txt")
+      self.save(dictArrayN[3],"dictN3.txt")
+      self.save(dictArrayN[4],"dictN4.txt")
+      self.save(dictArrayN[5],"dictN5.txt")
+      self.save(dictArrayN[6],"dictN6.txt")
+      self.save(dictArrayN[7],"dictN7.txt")
+      self.save(dictArrayN[8],"dictN8.txt")
+      self.save(dictArrayN[9],"dictN9.txt")
+
       recallP=[]
       recallN=[]
       precisionP=[]
@@ -213,29 +236,28 @@ class Bayes_Classifier:
       for numsubset in range(0,10):
          numerator=0
          denominator=0
-         for Pfile in lFileListSubsetP[num]:
+         for Pfile in lFileListSubsetP[numsubset]:
             value=self.classifyTest(Pfile,dictArrayP[numsubset],dictArrayN[numsubset])
             if (value is "positive"):
                numerator+=1
                denominator+=1
             else:
                denominator+=1
+         print numerator*1.0/denominator
          recallP.append(numerator*1.0/denominator)
 
       for numsubset in range(0,10):
          numerator=0
          denominator=0
-         for Nfile in lFileListSubsetN[num]:
+         for Nfile in lFileListSubsetN[numsubset]:
             value=self.classifyTest(Nfile,dictArrayP[numsubset],dictArrayN[numsubset])
             if (value is "negative"):
                numerator+=1
                denominator+=1
             else:
                denominator+=1
+         print numerator*1.0/denominator
          recallN.append(numerator*1.0/denominator)
-
-      print recallP
-      print recallN
 
    def classifyTest(self, sText, dictP,dictN):
       """Given a target string sText, this function returns the most likely document
