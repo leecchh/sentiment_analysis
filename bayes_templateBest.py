@@ -149,8 +149,6 @@ class Bayes_Classifier:
             lFileListP.append(string)
          else:
             lFileListN.append(string)
-
-      print len(lFileListP)
       
       Plength=len(lFileListP)
       Nlength=len(lFileListN)
@@ -169,6 +167,9 @@ class Bayes_Classifier:
          for x in range(0+jump,Psubset+jump):
             lFileListSubsetP[num].append(lFileListP[x])
             lFileListSubsetN[num].append(lFileListN[x])
+            print len(lFileListSubsetP[4])
+
+      print len(lFileListSubsetP[4])
 
       dictArrayP=[]
       for num in range(0,10):
@@ -177,6 +178,10 @@ class Bayes_Classifier:
       dictArrayN=[]
       for num in range(0,10):
          dictArrayN.append({})
+
+      # if(os.path.isfile("dictP0.txt")):
+      #    dictP0=self.load("dictP0.txt")
+      #    self.dictN=self.load("dictN.txt")
 
       for numsubset in range(0,10):
          for num in range(0,10):
