@@ -269,8 +269,6 @@ class Bayes_Classifier:
          self.save(dictArrayN[8],"dictN8.txt")
          self.save(dictArrayN[9],"dictN9.txt")
 
-      s = raw_input('--> ')
-
       #Code for recall calculations
       recallP=[]
       recallN=[]
@@ -290,7 +288,6 @@ class Bayes_Classifier:
                denominator+=1
             else: #The case where positive file is classified as non-positive
                denominator+=1
-         print numerator*1.0/denominator
          recallP.append(numerator*1.0/denominator) #Append to list
 
       #Do calculations for each subset for negative
@@ -306,13 +303,7 @@ class Bayes_Classifier:
                denominator+=1
             else: #The case where negative file is classified as non-negative
                denominator+=1
-         print numerator*1.0/denominator
          recallN.append(numerator*1.0/denominator) #Append to list
-
-      print recallP
-      print recallN
-
-      s = raw_input('--> ')
 
       #Code for precision calculations
       precisionP=[]
@@ -344,8 +335,6 @@ class Bayes_Classifier:
             if (value=="negative"): #The case where file is correctly classified as negative
                numerator2+=1
                denominator2+=1
-         print numerator*1.0/denominator
-         print numerator2*1.0/denominator2
          precisionP.append(numerator*1.0/denominator) #Append to positive value precision list
          precisionN.append(numerator2*1.0/denominator2) #Append to negative value precision list
 
