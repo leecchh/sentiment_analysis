@@ -1,8 +1,11 @@
-# Name: 
-# Date:
-# Description:
-#
-#
+# File: bayesbest.py
+# Members and netids:
+# Chung Ho Lee, chl433
+# Edward Hu, ehe839
+# Atul Adhikari, aca089
+
+# Date: 5/23/2016
+# Group work statement: All group members were present and contributing during all work on this project
 
 import math, os, pickle, re
 
@@ -30,15 +33,18 @@ class Bayes_Classifier:
          break
       lFileListP = []
       lFileListN = []
-      posString='movies-5'
-      negString='movies-1'
+      posString='movies-5' #What positive movies start with
+      negString='movies-1' #What negative movies start with
 
+      # Append the strings of file names in
+      # Different lists depending on type
       for string in lFileList:
          if(string.startswith(posString)):
             lFileListP.append(string)
          else:
             lFileListN.append(string)
 
+      # Store every word in positive files in dictionary
       for Pfile in lFileListP:
          string="movies_reviews/"+Pfile
          revString=self.loadFile(string)
@@ -49,6 +55,7 @@ class Bayes_Classifier:
             else:
                self.dictP[word] = 1
 
+      # Store every word in negative files in dictionary
       for Nfile in lFileListN:
          string="movies_reviews/"+Nfile
          revString=self.loadFile(string)
@@ -59,6 +66,7 @@ class Bayes_Classifier:
             else:
                self.dictN[word] = 1
 
+      #Save the dictionaries in 2 files
       self.save(self.dictP,"dictP.txt")
       self.save(self.dictN,"dictN.txt")
 
@@ -75,9 +83,10 @@ class Bayes_Classifier:
       posString='movies-5'
       negString='movies-1'
 
-      PNum=0
-      NNum=0
+      PNum=0 #Initialize values
+      NNum=0 #Initialize values
 
+      # Calculate number of positive and negative files
       for string in lFileList:
          if(string.startswith(posString)):
             PNum=PNum+1
@@ -86,16 +95,22 @@ class Bayes_Classifier:
 
       PriorPos=PNum*1.0/(PNum+NNum)
       PriorNeg=1-PriorPos
+
+      # Initialize probability
       probabilityP=1
+      probabilityN=1
+
+      # Find frequency of positive words
       totalFreqP=0
       for value in (self.dictP).values():
          totalFreqP=totalFreqP+value
-
-      probabilityN=1
+      
+      # Find frequency of negative words
       totalFreqN=0
       for value in (self.dictN).values():
          totalFreqN=totalFreqN+value
 
+      # Compute probabilityP for each file
       lst=self.tokenize(sText)
       for word in lst:
          wordFreq=0
@@ -106,35 +121,37 @@ class Bayes_Classifier:
          wordprob=wordFreq*1.0/(totalFreqP)
          probabilityP=probabilityP+math.log(wordprob*1.0)
 
+      # Compute probabilityN for each file
       for word in lst:
          wordFreq=0
          if (self.dictN).has_key(word):
             wordFreq=(self.dictN).get(word)
          else:
-            wordFreq=1
+            wordFreq=1 #Default frequency 1 if not found
          wordprob=wordFreq*1.0/(totalFreqN)
          probabilityN=probabilityN+math.log(wordprob*1.0)
 
+      # Take absolute value of computed log probability
       probabilityP=abs(probabilityP)
       probabilityN=abs(probabilityN)
 
       stringLen=len(lst) # Get the number of strings in the input
-      lensqt=math.sqrt(stringLen) # Takes the square root of the number of strings
-      print probabilityP
-      print probabilityN
+      lensqt1=math.sqrt(stringLen)
+      lensqt=math.sqrt(lensqt1) # Takes the 4th root of the number of strings
 
       if probabilityP>probabilityN:
-         if (probabilityN>probabilityP-0.5*lensqt):
-            return "neutral"
+         if (probabilityN>probabilityP-0.7*lensqt): #Use lensqt in our classification
+            return "neutral" #Values are too close, return neutral
          else:
-            return "negative"
+            return "negative" #More likely to be negative, return
       if probabilityP<=probabilityN:
-         if (probabilityP>probabilityN-0.5*lensqt):
-            return "neutral"
+         if (probabilityP>probabilityN-0.7*lensqt): #Use lensqt in our classification
+            return "neutral" #Values are too close, return neutral
          else:
-            return "positive"
+            return "positive" #More likely to be positive, return
 
    def crossVal(self):
+      """Cross validating data"""
       lFileList = [] #The whole list
       for fFileObj in os.walk("movies_reviews/"):
          lFileList = fFileObj[2]
@@ -144,14 +161,14 @@ class Bayes_Classifier:
       posString='movies-5'
       negString='movies-1'
 
+      #Initialize lFileListP and lFileListN
       for string in lFileList:
          if(string.startswith(posString)):
             lFileListP.append(string)
          else:
             lFileListN.append(string)
 
-
-      
+      # Initialize the subset length for each of 10 subsets
       Plength=len(lFileListP)
       Nlength=len(lFileListN)
       Nsubset=Nlength/10
@@ -159,6 +176,7 @@ class Bayes_Classifier:
       lFileListSubsetP=[[],[],[],[],[],[],[],[],[],[]]
       lFileListSubsetN=[[],[],[],[],[],[],[],[],[],[]]
 
+      # Add files into each subset
       for num in range(0,10):
          jump=num*Psubset
          for x in range(0+jump,Psubset+jump):
@@ -169,9 +187,11 @@ class Bayes_Classifier:
          for x in range(0+jump,Nsubset+jump):
             lFileListSubsetN[num].append(lFileListN[x])
 
+      #Initialize dictionaries
       dictArrayP=[{},{},{},{},{},{},{},{},{},{}]
       dictArrayN=[{},{},{},{},{},{},{},{},{},{}]
 
+      # Load dictionaries if already created
       if(os.path.isfile("dictP0.txt")):
          dictArrayP[0]=self.load("dictP0.txt")
          dictArrayP[1]=self.load("dictP1.txt")
@@ -195,10 +215,13 @@ class Bayes_Classifier:
          dictArrayN[8]=self.load("dictN8.txt")
          dictArrayN[9]=self.load("dictN9.txt")
 
+      #Form dictionaries if they are not already there
+      #For each word in each subset a dictionary is formed
+      #Positive dictionary
       else:
          for numsubset in range(0,10):
             for num in range(0,10):
-               if (numsubset!=num):
+               if (numsubset!=num): #Do not include when numsubset=num
                   for Pfile in lFileListSubsetP[num]:
                      string="movies_reviews/"+Pfile
                      revString=self.loadFile(string)
@@ -209,9 +232,10 @@ class Bayes_Classifier:
                         else:
                            (dictArrayP[numsubset])[word] = 1
 
+         #Negative dictionary
          for numsubset in range(0,10):
             for num in range(0,10):
-               if (numsubset!=num):
+               if (numsubset!=num):#Do not include when numsubset=num
                   for Nfile in lFileListSubsetN[num]:
                      string="movies_reviews/"+Nfile
                      revString=self.loadFile(string)
@@ -222,6 +246,7 @@ class Bayes_Classifier:
                         else:
                            (dictArrayN[numsubset])[word] = 1
 
+         #Save dictionaries
          self.save(dictArrayP[0],"dictP0.txt")
          self.save(dictArrayP[1],"dictP1.txt")
          self.save(dictArrayP[2],"dictP2.txt")
@@ -246,51 +271,56 @@ class Bayes_Classifier:
 
       s = raw_input('--> ')
 
-      # recallP=[]
-      # recallN=[]
-      # numerator=0
-      # denominator=0
+      #Code for recall calculations
+      recallP=[]
+      recallN=[]
+      numerator=0
+      denominator=0
 
-      # for numsubset in range(0,10):
-      #    numerator=0
-      #    denominator=0
-      #    for Pfile in lFileListSubsetP[numsubset]:
-      #       string="movies_reviews/"+Pfile
-      #       pText=self.loadFile(string)
-      #       value=self.classifyTest(pText,dictArrayP[numsubset],dictArrayN[numsubset])
-      #       if (value=="positive"):
-      #          numerator+=1
-      #          denominator+=1
-      #       else:
-      #          denominator+=1
-      #    print numerator*1.0/denominator
-      #    recallP.append(numerator*1.0/denominator)
+      #Do calculations for each subset for positive
+      for numsubset in range(0,10):
+         numerator=0
+         denominator=0
+         for Pfile in lFileListSubsetP[numsubset]:
+            string="movies_reviews/"+Pfile
+            pText=self.loadFile(string)
+            value=self.classifyTest(pText,dictArrayP[numsubset],dictArrayN[numsubset])
+            if (value=="positive"): #The case where file is correctly classified as positive
+               numerator+=1
+               denominator+=1
+            else: #The case where positive file is classified as non-positive
+               denominator+=1
+         print numerator*1.0/denominator
+         recallP.append(numerator*1.0/denominator) #Append to list
 
-      # for numsubset in range(0,10):
-      #    numerator=0
-      #    denominator=0
-      #    for Nfile in lFileListSubsetN[numsubset]:
-      #       string="movies_reviews/"+Nfile
-      #       nText=self.loadFile(string)
-      #       value=self.classifyTest(nText,dictArrayP[numsubset],dictArrayN[numsubset])
-      #       if (value=="negative"):
-      #          numerator+=1
-      #          denominator+=1
-      #       else:
-      #          denominator+=1
-      #    print numerator*1.0/denominator
-      #    recallN.append(numerator*1.0/denominator)
+      #Do calculations for each subset for negative
+      for numsubset in range(0,10):
+         numerator=0
+         denominator=0
+         for Nfile in lFileListSubsetN[numsubset]:
+            string="movies_reviews/"+Nfile
+            nText=self.loadFile(string)
+            value=self.classifyTest(nText,dictArrayP[numsubset],dictArrayN[numsubset])
+            if (value=="negative"): #The case where file is correctly classified as negative
+               numerator+=1
+               denominator+=1
+            else: #The case where negative file is classified as non-negative
+               denominator+=1
+         print numerator*1.0/denominator
+         recallN.append(numerator*1.0/denominator) #Append to list
 
-      # print recallP
-      # print recallN
+      print recallP
+      print recallN
 
-      # s = raw_input('--> ')
+      s = raw_input('--> ')
 
+      #Code for precision calculations
       precisionP=[]
       precisionN=[]
       numerator2=0
       denominator2=0
 
+      #Do calculations for each subset
       for numsubset in range(0,10):
          numerator=0
          denominator=0
@@ -300,29 +330,27 @@ class Bayes_Classifier:
             string="movies_reviews/"+Pfile
             pText=self.loadFile(string)
             value=self.classifyTestOrg(pText,dictArrayP[numsubset],dictArrayN[numsubset])
-            if (value=="positive"):
+            if (value=="positive"): #The case where file is correctly classified as positive
                numerator+=1
                denominator+=1
-            if (value=="negative"):
+            if (value=="negative"):#The case where positive file is classified as negative
                denominator2+=1
          for Nfile in lFileListSubsetN[numsubset]:
             string="movies_reviews/"+Nfile
             nText=self.loadFile(string)
             value=self.classifyTestOrg(nText,dictArrayP[numsubset],dictArrayN[numsubset])
-            if (value=="positive"):
+            if (value=="positive"):#The case where negative file is classified as positive
                denominator+=1
-            if (value=="negative"):
+            if (value=="negative"): #The case where file is correctly classified as negative
                numerator2+=1
                denominator2+=1
          print numerator*1.0/denominator
          print numerator2*1.0/denominator2
-         precisionP.append(numerator*1.0/denominator)
-         precisionN.append(numerator2*1.0/denominator2)
+         precisionP.append(numerator*1.0/denominator) #Append to positive value precision list
+         precisionN.append(numerator2*1.0/denominator2) #Append to negative value precision list
 
    def classifyTest(self, sText, dictP,dictN):
-      """Given a target string sText, this function returns the most likely document
-      class to which the target string belongs (i.e., positive, negative or neutral).
-      """
+      """Improved Test for cross validation"""
       lFileList = []
       for fFileObj in os.walk("movies_reviews/"):
          lFileList = fFileObj[2]
@@ -332,9 +360,10 @@ class Bayes_Classifier:
       posString='movies-5'
       negString='movies-1'
 
-      PNum=0
-      NNum=0
+      PNum=0 #Initialize values
+      NNum=0 #Initialize values
 
+      # Calculate number of positive and negative files
       for string in lFileList:
          if(string.startswith(posString)):
             PNum=PNum+1
@@ -343,16 +372,22 @@ class Bayes_Classifier:
 
       PriorPos=PNum*1.0/(PNum+NNum)
       PriorNeg=1-PriorPos
+
+      # Initialize probability
       probabilityP=1
+      probabilityN=1
+
+      # Find frequency of positive words
       totalFreqP=0
       for value in (dictP).values():
          totalFreqP=totalFreqP+value
-
-      probabilityN=1
+      
+      # Find frequency of negative words
       totalFreqN=0
       for value in (dictN).values():
          totalFreqN=totalFreqN+value
 
+      # Compute probabilityP for each file
       lst=self.tokenize(sText)
       for word in lst:
          wordFreq=0
@@ -363,15 +398,17 @@ class Bayes_Classifier:
          wordprob=wordFreq*1.0/(totalFreqP)
          probabilityP=probabilityP+math.log(wordprob*1.0)
 
+      # Compute probabilityN for each file
       for word in lst:
          wordFreq=0
          if (dictN).has_key(word):
             wordFreq=(dictN).get(word)
          else:
-            wordFreq=1
+            wordFreq=1 #Default frequency 1 if not found
          wordprob=wordFreq*1.0/(totalFreqN)
          probabilityN=probabilityN+math.log(wordprob*1.0)
 
+      # Take absolute value of computed log probability
       probabilityP=abs(probabilityP)
       probabilityN=abs(probabilityN)
 
@@ -380,20 +417,18 @@ class Bayes_Classifier:
       lensqt=math.sqrt(lensqt1) # Takes the 4th root of the number of strings
 
       if probabilityP>probabilityN:
-         if (probabilityN>probabilityP-0.7*lensqt):
-            return "neutral"
+         if (probabilityN>probabilityP-0.7*lensqt): #Use lensqt in our classification
+            return "neutral" #Values are too close, return neutral
          else:
-            return "negative"
+            return "negative" #More likely to be negative, return
       if probabilityP<=probabilityN:
-         if (probabilityP>probabilityN-0.7*lensqt):
-            return "neutral"
+         if (probabilityP>probabilityN-0.7*lensqt): #Use lensqt in our classification
+            return "neutral" #Values are too close, return neutral
          else:
-            return "positive"
+            return "positive" #More likely to be positive, return
 
    def classifyTestOrg(self, sText, dictP,dictN):
-      """Given a target string sText, this function returns the most likely document
-      class to which the target string belongs (i.e., positive, negative or neutral).
-      """
+      """Original Test for cross validation"""
       lFileList = []
       for fFileObj in os.walk("movies_reviews/"):
          lFileList = fFileObj[2]
@@ -403,9 +438,10 @@ class Bayes_Classifier:
       posString='movies-5'
       negString='movies-1'
 
-      PNum=0
-      NNum=0
+      PNum=0 #Initialize values
+      NNum=0 #Initialize values
 
+      # Calculate number of positive and negative files
       for string in lFileList:
          if(string.startswith(posString)):
             PNum=PNum+1
@@ -414,16 +450,22 @@ class Bayes_Classifier:
 
       PriorPos=PNum*1.0/(PNum+NNum)
       PriorNeg=1-PriorPos
+
+      # Initialize probability
       probabilityP=1
+      probabilityN=1
+
+      # Find frequency of positive words
       totalFreqP=0
       for value in (dictP).values():
          totalFreqP=totalFreqP+value
-
-      probabilityN=1
+      
+      # Find frequency of negative words
       totalFreqN=0
       for value in (dictN).values():
          totalFreqN=totalFreqN+value
 
+      # Compute probabilityP for each file
       lst=self.tokenize(sText)
       for word in lst:
          wordFreq=0
@@ -434,31 +476,30 @@ class Bayes_Classifier:
          wordprob=wordFreq*1.0/(totalFreqP)
          probabilityP=probabilityP+math.log(wordprob*1.0)
 
+      # Compute probabilityN for each file
       for word in lst:
          wordFreq=0
          if (dictN).has_key(word):
             wordFreq=(dictN).get(word)
          else:
-            wordFreq=1
+            wordFreq=1 #Default frequency 1 if not found
          wordprob=wordFreq*1.0/(totalFreqN)
          probabilityN=probabilityN+math.log(wordprob*1.0)
 
+      # Take absolute value of computed log probability
       probabilityP=abs(probabilityP)
       probabilityN=abs(probabilityN)
 
-      stringLen=len(lst) # Get the number of strings in the input
-      lensqt=math.sqrt(stringLen) # Takes the square root of the number of strings
-
       if probabilityP>probabilityN:
          if (probabilityN>probabilityP-0.8):
-            return "neutral"
+            return "neutral" #Return neutral since values are too close
          else:
-            return "negative"
+            return "negative" #Return negative, more likely
       if probabilityP<=probabilityN:
          if (probabilityP>probabilityN-0.8):
-            return "neutral"
+            return "neutral" #Return neutral since values are too close
          else:
-            return "positive"
+            return "positive" #Return negative, more likely
 
    def loadFile(self, sFilename):
       """Given a file name, return the contents of the file as a string."""

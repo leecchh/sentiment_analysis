@@ -1,8 +1,11 @@
-# Name: 
-# Date:
-# Description:
-#
-#
+# File: bayes.py
+# Members and netids:
+# Chung Ho Lee, chl433
+# Edward Hu, ehe839
+# Atul Adhikari, aca089
+
+# Date: 5/23/2016
+# Group work statement: All group members were present and contributing during all work on this project
 
 import math, os, pickle, re
 
@@ -30,15 +33,18 @@ class Bayes_Classifier:
          break
       lFileListP = []
       lFileListN = []
-      posString='movies-5'
-      negString='movies-1'
+      posString='movies-5' #What positive movies start with
+      negString='movies-1' #What negative movies start with
 
+      # Append the strings of file names in
+      # Different lists depending on type
       for string in lFileList:
          if(string.startswith(posString)):
             lFileListP.append(string)
          else:
             lFileListN.append(string)
 
+      # Store every word in positive files in dictionary
       for Pfile in lFileListP:
          string="movies_reviews/"+Pfile
          revString=self.loadFile(string)
@@ -49,6 +55,7 @@ class Bayes_Classifier:
             else:
                self.dictP[word] = 1
 
+      # Store every word in negative files in dictionary
       for Nfile in lFileListN:
          string="movies_reviews/"+Nfile
          revString=self.loadFile(string)
@@ -59,6 +66,7 @@ class Bayes_Classifier:
             else:
                self.dictN[word] = 1
 
+      #Save the dictionaries in 2 files
       self.save(self.dictP,"dictP.txt")
       self.save(self.dictN,"dictN.txt")
 
@@ -75,9 +83,10 @@ class Bayes_Classifier:
       posString='movies-5'
       negString='movies-1'
 
-      PNum=0
-      NNum=0
+      PNum=0 #Initialize values
+      NNum=0 #Initialize values
 
+      # Calculate number of positive and negative files
       for string in lFileList:
          if(string.startswith(posString)):
             PNum=PNum+1
@@ -86,16 +95,22 @@ class Bayes_Classifier:
 
       PriorPos=PNum*1.0/(PNum+NNum)
       PriorNeg=1-PriorPos
-      probabilityP=math.log(PriorPos)
+
+      # Initialize probability
+      probabilityP=1
+      probabilityN=1
+
+      # Find frequency of positive words
       totalFreqP=0
       for value in (self.dictP).values():
          totalFreqP=totalFreqP+value
-
-      probabilityN=math.log(PriorNeg)
+      
+      # Find frequency of negative words
       totalFreqN=0
       for value in (self.dictN).values():
          totalFreqN=totalFreqN+value
 
+      # Compute probabilityP for each file
       lst=self.tokenize(sText)
       for word in lst:
          wordFreq=0
@@ -106,33 +121,30 @@ class Bayes_Classifier:
          wordprob=wordFreq*1.0/(totalFreqP)
          probabilityP=probabilityP+math.log(wordprob*1.0)
 
+      # Compute probabilityN for each file
       for word in lst:
          wordFreq=0
          if (self.dictN).has_key(word):
             wordFreq=(self.dictN).get(word)
          else:
-            wordFreq=1
+            wordFreq=1 #Default frequency 1 if not found
          wordprob=wordFreq*1.0/(totalFreqN)
          probabilityN=probabilityN+math.log(wordprob*1.0)
 
+      # Take absolute value of computed log probability
       probabilityP=abs(probabilityP)
       probabilityN=abs(probabilityN)
 
-      print probabilityP
-      print probabilityN
-
       if probabilityP>probabilityN:
          if (probabilityN>probabilityP-0.8):
-            return "neutral"
+            return "neutral" #Values are too close, return neutral
          else:
-            return "negative"
+            return "negative" #More likely to be negative, return
       if probabilityP<=probabilityN:
          if (probabilityP>probabilityN-0.8):
-            return "neutral"
+            return "neutral" #Values are too close, return neutral
          else:
-            return "positive"
-
-
+            return "positive" #More likely to be positive, return
 
    def loadFile(self, sFilename):
       """Given a file name, return the contents of the file as a string."""
