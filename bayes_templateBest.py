@@ -246,10 +246,10 @@ class Bayes_Classifier:
 
       s = raw_input('--> ')
 
-      recallP=[]
-      recallN=[]
-      numerator=0
-      denominator=0
+      # recallP=[]
+      # recallN=[]
+      # numerator=0
+      # denominator=0
 
       # for numsubset in range(0,10):
       #    numerator=0
@@ -257,7 +257,7 @@ class Bayes_Classifier:
       #    for Pfile in lFileListSubsetP[numsubset]:
       #       string="movies_reviews/"+Pfile
       #       pText=self.loadFile(string)
-      #       value=self.classifyTestOrg(pText,dictArrayP[numsubset],dictArrayN[numsubset])
+      #       value=self.classifyTest(pText,dictArrayP[numsubset],dictArrayN[numsubset])
       #       if (value=="positive"):
       #          numerator+=1
       #          denominator+=1
@@ -272,7 +272,7 @@ class Bayes_Classifier:
       #    for Nfile in lFileListSubsetN[numsubset]:
       #       string="movies_reviews/"+Nfile
       #       nText=self.loadFile(string)
-      #       value=self.classifyTestOrg(nText,dictArrayP[numsubset],dictArrayN[numsubset])
+      #       value=self.classifyTest(nText,dictArrayP[numsubset],dictArrayN[numsubset])
       #       if (value=="negative"):
       #          numerator+=1
       #          denominator+=1
@@ -284,6 +284,8 @@ class Bayes_Classifier:
       # print recallP
       # print recallN
 
+      # s = raw_input('--> ')
+
       precisionP=[]
       precisionN=[]
       numerator2=0
@@ -292,6 +294,8 @@ class Bayes_Classifier:
       for numsubset in range(0,10):
          numerator=0
          denominator=0
+         numerator2=0
+         denominator2=0
          for Pfile in lFileListSubsetP[numsubset]:
             string="movies_reviews/"+Pfile
             pText=self.loadFile(string)
@@ -304,7 +308,7 @@ class Bayes_Classifier:
          for Nfile in lFileListSubsetN[numsubset]:
             string="movies_reviews/"+Nfile
             nText=self.loadFile(string)
-            value=self.classifyTestOrg(pText,dictArrayP[numsubset],dictArrayN[numsubset])
+            value=self.classifyTestOrg(nText,dictArrayP[numsubset],dictArrayN[numsubset])
             if (value=="positive"):
                denominator+=1
             if (value=="negative"):
@@ -372,7 +376,8 @@ class Bayes_Classifier:
       probabilityN=abs(probabilityN)
 
       stringLen=len(lst) # Get the number of strings in the input
-      lensqt=math.sqrt(stringLen) # Takes the square root of the number of strings
+      lensqt1=math.sqrt(stringLen)
+      lensqt=math.sqrt(lensqt1) # Takes the 4th root of the number of strings
 
       if probabilityP>probabilityN:
          if (probabilityN>probabilityP-0.7*lensqt):
